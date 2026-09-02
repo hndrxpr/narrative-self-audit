@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Narrative Self-Audit · hndrx PR</title>
+<style>
+  :root {
+    --charcoal: #2D353B;
+    --cream: #E6DFD7;
+    --berry: #86194A;
+    --light: #F5F2EE;
+    --white: #FFFFFF;
+    --text: #2D353B;
+    --mid-gray: #888888;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Verdana, Geneva, sans-serif;
+    background: var(--white);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .site-header {
+    background: var(--charcoal);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--berry);
+  }
+  .site-header .brand {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--berry);
+    letter-spacing: 0.03em;
+  }
+  .site-header .tool-name {
+    font-size: 12px;
+    color: var(--cream);
+    opacity: 0.8;
+  }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    background: var(--light);
+    height: 4px;
+  }
+  .progress-bar-fill {
+    background: var(--berry);
+    height: 4px;
+    transition: width 0.4s ease;
+  }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* INTRO */
+  .intro-hero {
+    background: var(--charcoal);
+    padding: 64px 32px 56px;
+    text-align: left;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .intro-hero h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    color: var(--cream);
+    line-height: 1.2;
+    margin-bottom: 20px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+  }
+  .intro-hero p {
+    font-size: 16px;
+    color: var(--cream);
+    opacity: 0.85;
+    line-height: 1.7;
+    margin-bottom: 12px;
+    font-family: Georgia, serif;
+  }
+  .intro-body {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+  .intro-body p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 14px;
+    font-family: Georgia, serif;
+  }
+  .start-btn {
+    display: inline-block;
+    margin-top: 16px;
+    background: var(--berry);
+    color: var(--white);
+    border: none;
+    padding: 16px 36px;
+    font-size: 15px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: opacity 0.2s;
+  }
+  .start-btn:hover { opacity: 0.88; }
+
+  /* QUESTION SCREEN */
+  .question-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 32px 64px;
+  }
+  .dimension-label {
+    font-size: 11px;
+    color: var(--berry);
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .question-counter {
+    font-size: 12px;
+    color: var(--mid-gray);
+    margin-bottom: 24px;
+  }
+  .question-text {
+    font-size: clamp(17px, 3vw, 21px);
+    line-height: 1.5;
+    color: var(--charcoal);
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    margin-bottom: 32px;
+  }
+  .answers-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .answer-item {
+    border: 1.5px solid #D0CACA;
+    background: var(--white);
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-size: 15px;
+    line-height: 1.5;
+    font-family: Georgia, serif;
+    color: var(--text);
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .answer-item:hover {
+    border-color: var(--berry);
+    background: var(--light);
+  }
+  .answer-item.selected {
+    border-color: var(--berry);
+    background: var(--cream);
+  }
+  .answer-letter {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--berry);
+    font-family: Verdana, Geneva, sans-serif;
+    min-width: 18px;
+    padding-top: 2px;
+  }
+  .nav-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 36px;
+  }
+  .btn-next {
+    background: var(--berry);
+    color: var(--white);
+    border: none;
+    padding: 14px 32px;
+    font-size: 14px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .btn-next.enabled {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .btn-next.enabled:hover { opacity: 0.88; }
+  .btn-back {
+    background: none;
+    color: var(--mid-gray);
+    border: 1.5px solid #D0CACA;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-family: Verdana, Geneva, sans-serif;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .btn-back:hover { border-color: var(--charcoal); color: var(--charcoal); }
+
+  /* EMAIL CAPTURE */
+  .email-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 32px 64px;
+  }
+  .email-wrap h2 {
+    font-size: clamp(20px, 4vw, 28px);
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    color: var(--charcoal);
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+  .email-wrap p {
+    font-size: 15px;
+    line-height: 1.7;
+    font-family: Georgia, serif;
+    color: var(--text);
+    margin-bottom: 32px;
+  }
+  .email-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .email-form label {
+    font-size: 12px;
+    font-weight: bold;
+    font-family: Verdana, Geneva, sans-serif;
+    color: var(--charcoal);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .email-form input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid #D0CACA;
+    font-size: 15px;
+    font-family: Georgia, serif;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .email-form input:focus { border-color: var(--berry); }
+  .submit-btn {
+    background: var(--berry);
+    color: var(--white);
+    border: none;
+    padding: 16px 36px;
+    font-size: 15px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+    align-self: flex-start;
+  }
+  .submit-btn:hover { opacity: 0.88; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* RESULTS */
+  .result-framing {
+    background: var(--charcoal);
+    padding: 48px 32px;
+  }
+  .result-framing p {
+    max-width: 680px;
+    margin: 0 auto;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--cream);
+    font-family: Georgia, serif;
+    opacity: 0.9;
+  }
+  .result-main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 32px;
+  }
+  .delivery-notice {
+    display: none;
+    background: var(--cream);
+    border-left: 4px solid var(--berry);
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    line-height: 1.7;
+    font-family: Georgia, serif;
+    color: var(--text);
+  }
+  .delivery-notice a { color: var(--berry); }
+  .result-title {
+    font-size: clamp(24px, 4vw, 34px);
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    color: var(--charcoal);
+    margin-bottom: 24px;
+    line-height: 1.25;
+  }
+  .result-body {
+    font-size: 16px;
+    line-height: 1.85;
+    font-family: Georgia, serif;
+    color: var(--text);
+    margin-bottom: 40px;
+  }
+  .result-scores {
+    background: var(--light);
+    padding: 28px;
+    margin-bottom: 40px;
+  }
+  .result-scores h3 {
+    font-size: 12px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    color: var(--berry);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+  .score-dim {
+    font-size: 13px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    color: var(--charcoal);
+    width: 110px;
+    flex-shrink: 0;
+  }
+  .score-track {
+    flex: 1;
+    height: 6px;
+    background: #D0CACA;
+    position: relative;
+  }
+  .score-fill {
+    height: 6px;
+    background: var(--berry);
+    transition: width 0.8s ease;
+  }
+  .score-label {
+    font-size: 12px;
+    color: var(--mid-gray);
+    font-family: Verdana, Geneva, sans-serif;
+    width: 52px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .result-closing {
+    background: var(--cream);
+    padding: 32px;
+    font-size: 15px;
+    line-height: 1.8;
+    font-family: Georgia, serif;
+    color: var(--text);
+    margin-bottom: 40px;
+    font-style: italic;
+  }
+  .workbook-cta {
+    background: var(--charcoal);
+    padding: 36px 32px;
+    text-align: center;
+  }
+  .workbook-cta p {
+    color: var(--cream);
+    font-size: 15px;
+    font-family: Georgia, serif;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    opacity: 0.9;
+  }
+  .workbook-cta a {
+    display: inline-block;
+    background: var(--berry);
+    color: var(--white);
+    text-decoration: none;
+    padding: 15px 34px;
+    font-size: 14px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-weight: bold;
+    letter-spacing: 0.03em;
+    transition: opacity 0.2s;
+  }
+  .workbook-cta a:hover { opacity: 0.88; }
+
+  /* SITE FOOTER */
+  .site-footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 11px;
+    color: var(--mid-gray);
+    font-family: Verdana, Geneva, sans-serif;
+    border-top: 1px solid var(--light);
+  }
+
+  @media (max-width: 600px) {
+    .intro-hero, .intro-body, .question-wrap, .email-wrap, .result-main { padding-left: 20px; padding-right: 20px; }
+    .result-framing { padding: 36px 20px; }
+    .workbook-cta { padding: 28px 20px; }
+    .result-scores { padding: 20px; }
+    .result-closing { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <span class="brand">hndrx PR</span>
+  <span class="tool-name">Narrative Self-Audit</span>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+</div>
+
+<!-- INTRO SCREEN -->
+<div class="screen active" id="screen-intro">
+  <div class="intro-hero">
+    <h1>How well does your business story actually work?</h1>
+    <p>This audit looks at four areas of your story: the language you use, how consistently you use it, whether there's a specific moment behind your mission, and whether talking about it still feels real to you.</p>
+  </div>
+  <div class="intro-body">
+    <p>There are 12 questions. Each one has four answer choices. Pick the answer that's most true for you right now, not the one you wish were true.</p>
+    <p>Go through it once, straight through. Your first instinct is the one that matters.</p>
+    <button class="start-btn" onclick="startAudit()">Start the Audit</button>
+  </div>
+</div>
+
+<!-- QUESTION SCREEN -->
+<div class="screen" id="screen-question">
+  <div class="question-wrap">
+    <div class="dimension-label" id="dimLabel"></div>
+    <div class="question-counter" id="qCounter"></div>
+    <div class="question-text" id="qText"></div>
+    <ul class="answers-list" id="answersList"></ul>
+    <div class="nav-btns">
+      <button class="btn-back" id="btnBack" onclick="goBack()">Back</button>
+      <button class="btn-next" id="btnNext" onclick="goNext()">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL CAPTURE SCREEN -->
+<div class="screen" id="screen-email">
+  <div class="email-wrap">
+    <h2>You're done. Enter your name and email to see your results.</h2>
+    <p>Your results go directly to you. No sales emails. No follow-up unless you ask for it.</p>
+    <div class="email-form">
+      <div>
+        <label for="userName">First name</label>
+        <input type="text" id="userName" placeholder="Your first name" required>
+      </div>
+      <div>
+        <label for="userEmail">Email address</label>
+        <input type="email" id="userEmail" placeholder="you@yourbusiness.com" required>
+      </div>
+      <button class="submit-btn" id="submitBtn" onclick="submitAndShowResults()">See my results</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div class="screen" id="screen-results">
+  <div class="result-framing">
+    <p>Your results are pointing to the area of your story that needs the most attention right now. It may not be the only area worth looking at, but it's the right place to start. Working on this piece first tends to make everything else clearer.</p>
+  </div>
+  <div class="result-main">
+    <div class="delivery-notice" id="deliveryNotice">
+      Your results are below, but we couldn't email a copy to you just now. If you'd like one, write to <a href="mailto:hndrxpradmin@gmail.com">hndrxpradmin@gmail.com</a> and we'll send it over.
+    </div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-body" id="resultBody"></div>
+    <div class="result-scores">
+      <h3>Your scores by area</h3>
+      <div id="scoreBars"></div>
+    </div>
+    <div class="result-closing">Come back and take this again in 30 days. As your story develops, so will your results.</div>
+  </div>
+  <div class="workbook-cta">
+    <p>Ready to do the deeper work? The Story Foundations Workbook walks you through the four parts of your business story — where it started, who it's for, what makes it different, and what you want it to leave behind.</p>
+    <a href="https://hndrxpr.gumroad.com/l/story-foundations-workbook" target="_blank">Get the Workbook — $49</a>
+  </div>
+</div>
+
+<footer class="site-footer">
+  hndrx PR · Narrative Self-Audit · hndrxpr.com
+</footer>
+
+<script>
+const QUESTIONS = [
+  { dim: "Ownership", q: "When you read your business About page or bio out loud, how does it feel?", answers: [
+    { text: "Like something I would actually say.", pts: 3 },
+    { text: "Close, but a few spots don't sound like me.", pts: 2 },
+    { text: "Like I'm reciting a speech, not saying it.", pts: 1 },
+    { text: "I have never read it out loud.", pts: 0 }
+  ]},
+  { dim: "Ownership", q: "Where did the language in your current business bio, pitch deck, or About page mostly come from?", answers: [
+    { text: "I wrote it myself, in my own words.", pts: 3 },
+    { text: "I started with my words, then handed off to a team member to smooth it out.", pts: 2 },
+    { text: "An AI tool, template, competitor's site, or a ghostwriter.", pts: 1 },
+    { text: "I'm honestly not sure anymore, it's been edited so many times.", pts: 0 }
+  ]},
+  { dim: "Ownership", q: "When you're writing an email, social post, or message about your business, what usually happens?", answers: [
+    { text: "It comes together quickly, in my actual voice. I barely edit it.", pts: 3 },
+    { text: "I write it naturally, then tighten it up before sending.", pts: 2 },
+    { text: "I find myself using phrases I've seen other people in my industry use.", pts: 1 },
+    { text: "I avoid writing my own copy when I can help it.", pts: 0 }
+  ]},
+  { dim: "Consistency", q: "If your dream customer and your closest friend each asked what you actually do, how different would your answers be?", answers: [
+    { text: "Basically the same, just casual delivery versus a more formal one.", pts: 3 },
+    { text: "The core message would match, but I'd emphasize different things.", pts: 2 },
+    { text: "Pretty different. I have a professional version and an informal version.", pts: 1 },
+    { text: "I'd probably struggle to explain it the same way twice.", pts: 0 }
+  ]},
+  { dim: "Consistency", q: "Think about the last three times you described what you do out loud: a pitch, another type of meeting, a casual conversation. Did you use the same handful of words and phrases each time, or did you shift the description for the audience?", answers: [
+    { text: "Same core phrases every time. It's settled for me.", pts: 3 },
+    { text: "Mostly consistent, with small adjustments for context.", pts: 2 },
+    { text: "It genuinely depends on the situation and audience. The framing shifts a lot.", pts: 1 },
+    { text: "I haven't really noticed. I don't think about it that consciously.", pts: 0 }
+  ]},
+  { dim: "Consistency", q: "Pull up your last three or four pieces of content: posts, captions, a recent email. Read them back to back. Does the language sound like it's coming from the same person?", answers: [
+    { text: "Yes, clearly the same voice throughout.", pts: 3 },
+    { text: "Mostly, with a phrase or tone shift here or there.", pts: 2 },
+    { text: "Honestly, some of it barely sounds like me.", pts: 1 },
+    { text: "I haven't developed any content to review yet.", pts: 0 }
+  ]},
+  { dim: "Specificity", q: "When you explain your business and why you built it, do you usually talk about a real moment that happened, or is it a general statement about your mission?", answers: [
+    { text: "A specific moment, almost always. It's the easiest way for me to explain it.", pts: 3 },
+    { text: "I start with the mission, then add an example if there's time.", pts: 2 },
+    { text: "Mostly the mission or the why. I rarely share a specific moment.", pts: 1 },
+    { text: "I've never really thought about which one I default to.", pts: 0 }
+  ]},
+  { dim: "Specificity", q: "If someone asked you to describe the moment you knew you had to start your business, could you tell them, in detail, right now?", answers: [
+    { text: "Yes, I can tell you the exact moment.", pts: 3 },
+    { text: "Yes, but I'd need a second to think about the right words.", pts: 2 },
+    { text: "I have a general feeling, but not one specific moment.", pts: 1 },
+    { text: "Honestly, no. It was more of a slow build up than one exact moment.", pts: 0 }
+  ]},
+  { dim: "Specificity", q: "Pull up your About page or bio again. Are there details in there specific to you or your business — a number, a place, a name, a moment? Or could most of it describe several other businesses in your industry?", answers: [
+    { text: "There's something specific in there that's clearly ours.", pts: 3 },
+    { text: "There's a little, but it's mostly general language.", pts: 2 },
+    { text: "It could honestly describe a few other businesses doing something similar.", pts: 1 },
+    { text: "I'm not sure. I haven't looked at other business profiles.", pts: 0 }
+  ]},
+  { dim: "Conviction", q: "When you talk about why you built your business, does the feeling you had when you started come back? Or does it just sound like words you've said so many times they no longer mean anything?", answers: [
+    { text: "I still feel motivated by the why, even now, saying it out loud.", pts: 3 },
+    { text: "It comes out a little more polished than I'd like, but I still mean it.", pts: 2 },
+    { text: "It comes out like I'm reciting a speech. I'm not sure I feel it anymore.", pts: 1 },
+    { text: "I've never really noticed either way.", pts: 0 }
+  ]},
+  { dim: "Conviction", q: "If you had to explain why your business is essential, specifically for the people you built it for, could you do it without focusing on the general mission or using the same language you've used before?", answers: [
+    { text: "Yes, easily. It would sound different every time.", pts: 3 },
+    { text: "Mostly, but I'd probably include a few familiar lines.", pts: 2 },
+    { text: "I'd mostly be repeating things I've said before.", pts: 1 },
+    { text: "I'm honestly not sure I've thought about my mission and my audience's specific need as two different things.", pts: 0 }
+  ]},
+  { dim: "Conviction", q: "Has there ever been a moment — in a meeting, an interview, a conversation — where you started giving your rehearsed business mission and stopped to use your real language instead?", answers: [
+    { text: "Yes, and the real version was better.", pts: 3 },
+    { text: "I've really wanted to do that, but the rehearsed version feels safer.", pts: 2 },
+    { text: "No, I don't think I have a rehearsed version and a real version.", pts: 1 },
+    { text: "No, but reading this question, I think I might.", pts: 0 }
+  ]}
+];
+
+const RESULTS = {
+  block1: { title: "Your story is working.", body: "Your story is doing what it's supposed to do. Most importantly, the language is yours. It holds its intended meaning no matter who's listening, you can point to that real moment where it all started, and you're still motivated by the why, every time you say it out loud. That's rarer than it sounds. Most businesses are missing at least one of these. Keep building from here." },
+  block2: { title: "Your language just needs to catch up.", body: "You built your business for a specific reason and you know what that is. You can talk about it the same way over and over, and the purpose still means something to you. The piece that needs some attention is the language. Somewhere along the way, your words got lost or replaced by industry copy, or an editor. The story underneath is already solid. It just needs your own words." },
+  block3: { title: "Your story sounds like two different businesses.", body: "The words are yours, and they still mean something every time you say them. What needs some attention is how consistent that language is across different situations. The way you describe your business shifts depending on who's in the room. With that approach, it's more difficult to tell which version is actually true. They might both be true. Right now, they sound like two different businesses. People remember the business that sounds like one thing, not the business that changes depending on who's listening." },
+  block4: { title: "Your story is missing its moment.", body: "You sound like yourself. And you sound the same no matter who you're talking to. The purpose of your work is still real to you, every time you say it. What's missing is that moment — the one thing that happened that started all of this. Right now you're describing what you believe. You're not telling the story of why you believe it. That moment exists somewhere, but the detail hasn't made it into the language." },
+  block5: { title: "Your story still has something to say.", body: "Your words are your own, and they hold their power no matter who you're speaking to. You can point to the exact moment that started all of this. But somewhere between then and now, that spark may have faded. That doesn't mean the story isn't true anymore. The words are still right. You just need to find that feeling behind them again. When you do, the language will follow. People can tell the difference between a story that's still alive and one that's being recited." },
+  block6: { title: "Your story has some gaps to close.", body: "You're doing real work on your story, but a few things aren't lining up yet. Maybe the language isn't fully developed, maybe it shifts depending on the situation, or maybe the core purpose got lost somewhere along the way. That's not unusual, and it's not a sign that something is broken. It's a nudge to keep working. There's a version of your story still waiting to be told the way it actually happened." },
+  block7: { title: "You're closer than you think.", body: "Most of what you've developed is already working. The language sounds like you, the story holds up no matter where it's shared, and the moment behind the purpose is still real to you. What's left is a few small gaps, easy to miss unless you're looking for them. You're not starting over. You're just finishing the work you already started." }
+};
+
+// State
+let current = 0;
+let answers = new Array(12).fill(null);
+let selectedIdx = null;
+
+const DIMS = ["Ownership","Consistency","Specificity","Conviction"];
+const letters = ["A","B","C","D"];
+
+function startAudit() {
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-question').classList.add('active');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  document.getElementById('dimLabel').textContent = q.dim;
+  document.getElementById('qCounter').textContent = `Question ${current + 1} of 12`;
+  document.getElementById('qText').textContent = q.q;
+
+  const list = document.getElementById('answersList');
+  list.innerHTML = '';
+  q.answers.forEach((a, i) => {
+    const li = document.createElement('li');
+    li.className = 'answer-item' + (answers[current] === i ? ' selected' : '');
+    li.innerHTML = `<span class="answer-letter">${letters[i]}</span><span>${a.text}</span>`;
+    li.onclick = () => selectAnswer(i);
+    list.appendChild(li);
+  });
+
+  selectedIdx = answers[current];
+  const nextBtn = document.getElementById('btnNext');
+  nextBtn.textContent = current === 11 ? 'See my results' : 'Next';
+  nextBtn.classList.toggle('enabled', selectedIdx !== null);
+  document.getElementById('btnBack').style.display = current === 0 ? 'none' : 'inline-block';
+
+  const pct = Math.round((current / 12) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  window.scrollTo(0,0);
+}
+
+function selectAnswer(idx) {
+  answers[current] = idx;
+  selectedIdx = idx;
+  document.querySelectorAll('.answer-item').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('btnNext').classList.add('enabled');
+}
+
+function goNext() {
+  if (selectedIdx === null) return;
+  if (current < 11) {
+    current++;
+    renderQuestion();
+  } else {
+    showEmailCapture();
+  }
+}
+
+function goBack() {
+  if (current > 0) { current--; renderQuestion(); }
+}
+
+function showEmailCapture() {
+  document.getElementById('screen-question').classList.remove('active');
+  document.getElementById('screen-email').classList.add('active');
+  document.getElementById('progressBar').style.width = '95%';
+  window.scrollTo(0,0);
+}
+
+function computeScores() {
+  const dims = { Ownership: 0, Consistency: 0, Specificity: 0, Conviction: 0 };
+  const maxes = { Ownership: 9, Consistency: 9, Specificity: 9, Conviction: 9 };
+  QUESTIONS.forEach((q, i) => {
+    if (answers[i] !== null) dims[q.dim] += q.answers[answers[i]].pts;
+  });
+  return { dims, maxes };
+}
+
+function computeBlock(dims, maxes) {
+  const totalPts = Object.values(dims).reduce((a,b) => a+b, 0);
+  const overallPct = totalPts / 36;
+
+  // Dimension states using percentage thresholds (tested against 13 scenarios)
+  // Strong: >= 66% (covers 6/9 = 66.7%), Mixed: 34-65%, Weak: <= 33%
+  const states = {};
+  DIMS.forEach(d => {
+    const pct = dims[d] / 9;
+    states[d] = pct >= 0.66 ? 'strong' : pct >= 0.34 ? 'mixed' : 'weak';
+  });
+
+  const weakDims = DIMS.filter(d => states[d] === 'weak');
+  const strongCount = DIMS.filter(d => states[d] === 'strong').length;
+
+  // Block 1: all four dimensions strong
+  if (strongCount === 4) return 'block1';
+
+  // Blocks 2-5: weak in exactly one dimension, other three strong
+  if (weakDims.length === 1 && strongCount === 3) {
+    const map = { Ownership: 'block2', Consistency: 'block3', Specificity: 'block4', Conviction: 'block5' };
+    return map[weakDims[0]];
+  }
+
+  // Block 6: overall score <= 39% OR weak in two or more dimensions
+  if (overallPct <= 0.39 || weakDims.length >= 2) return 'block6';
+
+  // Block 7: no weak dimensions, but not all strong (some mixed)
+  return 'block7';
+}
+
+async function submitAndShowResults() {
+  const name = document.getElementById('userName').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+  if (!name || !email) { alert('Please enter your name and email to continue.'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'One moment...';
+
+  const { dims, maxes } = computeScores();
+  const block = computeBlock(dims, maxes);
+  const result = RESULTS[block];
+
+  // Build score summary for email
+  const scoreSummary = DIMS.map(d => `${d}: ${dims[d]}/9`).join(', ');
+
+  // Send to FormSubmit
+  let deliveryFailed = false;
+  try {
+    const res = await fetch('https://formsubmit.co/ajax/hndrxpradmin@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+        result_block: block,
+        result_title: result.title,
+        scores: scoreSummary,
+        _subject: `New Narrative Self-Audit submission — ${name}`
+      })
+    });
+    if (!res.ok) deliveryFailed = true;
+  } catch(e) {
+    deliveryFailed = true;
+    console.error('Narrative Self-Audit: delivery failed', e);
+  }
+
+  // Show results
+  document.getElementById('screen-email').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+  document.getElementById('progressBar').style.width = '100%';
+
+  document.getElementById('resultTitle').textContent = result.title;
+  document.getElementById('resultBody').textContent = result.body;
+
+  // If delivery failed, tell the person rather than losing it silently
+  if (deliveryFailed) {
+    document.getElementById('deliveryNotice').style.display = 'block';
+  }
+
+  // Render score bars
+  const bars = document.getElementById('scoreBars');
+  bars.innerHTML = '';
+  DIMS.forEach(d => {
+    const pct = Math.round((dims[d] / maxes[d]) * 100);
+    const label = pct >= 67 ? 'Strong' : pct >= 34 ? 'Mixed' : 'Needs work';
+    bars.innerHTML += `
+      <div class="score-row">
+        <div class="score-dim">${d}</div>
+        <div class="score-track"><div class="score-fill" style="width:${pct}%"></div></div>
+        <div class="score-label">${label}</div>
+      </div>`;
+  });
+
+  window.scrollTo(0,0);
+}
+</script>
+
+</body>
+</html>
