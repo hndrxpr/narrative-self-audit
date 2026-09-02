@@ -718,8 +718,16 @@ function computeBlock(dims, maxes) {
   const lowest = DIMS.filter(d => dims[d] === min);
   if (lowest.length > 1 && (max - min) <= 1) return 'block7';
 
+  // When two or more areas tie for lowest, resolve by which is most
+  // foundational rather than by list order: each depends on the one before it.
+  // No real moment, nothing to build on. The words have to be yours before
+  // they can be consistent. It has to still mean something when you say it.
+  // Consistency comes last — it is about deploying what the others produce.
+  const PRIORITY = ['Specificity', 'Ownership', 'Conviction', 'Consistency'];
+  const focus = PRIORITY.find(d => lowest.includes(d));
+
   // Otherwise: speak to the weakest area, whatever it is.
-  return map[lowest[0]];
+  return map[focus];
 }
 
 // The single area the result speaks to — useful for segmenting the list.
