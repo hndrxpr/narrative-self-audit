@@ -424,24 +424,6 @@
     .result-scores { padding: 20px; }
     .result-closing { padding: 24px 20px; }
   }
-
-  /* KIT FORM */
-  .kit-subscribe-wrap {
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 40px 32px;
-    border-top: 1px solid var(--light);
-  }
-  .kit-subscribe-intro {
-    font-size: 15px;
-    font-family: Georgia, serif;
-    line-height: 1.7;
-    color: var(--text);
-    margin-bottom: 20px;
-  }
-  @media (max-width: 600px) {
-    .kit-subscribe-wrap { padding: 32px 20px; }
-  }
 </style>
 </head>
 <body>
@@ -486,7 +468,7 @@
 <div class="screen" id="screen-email">
   <div class="email-wrap">
     <h2>You're done. Enter your name and email to see your results.</h2>
-    <p>Your results go directly to you. No sales emails. No follow-up unless you ask for it.</p>
+    <p>Your results go directly to you, along with a note on what they mean and where to go from here. We'll also send occasional resources and thinking from hndrx PR. Unsubscribe any time.</p>
     <div class="email-form">
       <div>
         <label for="userName">First name</label>
@@ -508,7 +490,7 @@
   </div>
   <div class="result-main">
     <div class="delivery-notice" id="deliveryNotice">
-      Your results are below, but we couldn't email a copy to you just now. If you'd like one, write to <a href="mailto:hndrxpradmin@gmail.com">hndrxpradmin@gmail.com</a> and we'll send it over.
+      Your results are below, but we couldn't add you to the list just now. If you'd like the follow-up, write to <a href="mailto:hndrxpradmin@gmail.com">hndrxpradmin@gmail.com</a> and we'll take care of it.
     </div>
     <div class="result-title" id="resultTitle"></div>
     <div class="result-body" id="resultBody"></div>
@@ -517,10 +499,6 @@
       <div id="scoreBars"></div>
     </div>
     <div class="result-closing">Come back and take this again in 30 days. As your story develops, so will your results.</div>
-  </div>
-  <div class="kit-subscribe-wrap">
-    <p class="kit-subscribe-intro">Want to keep working on your story? Enter your email and we'll share resources, tools, and thinking from hndrx PR — starting with a note on what your results mean and where to go from here.</p>
-    <script async data-uid="1efb10624a" src="https://hndrx-pr.kit.com/1efb10624a/index.js"></script>
   </div>
   <div class="workbook-cta">
     <p>Ready to do the deeper work? The Story Foundations Workbook walks you through the four parts of your business story — where it started, who it's for, what makes it different, and what you want it to leave behind.</p>
@@ -744,6 +722,14 @@ function computeBlock(dims, maxes) {
   return map[lowest[0]];
 }
 
+// The single area the result speaks to — useful for segmenting the list.
+function focusArea(dims, block) {
+  const map = { block2: 'Ownership', block3: 'Consistency', block4: 'Specificity', block5: 'Conviction' };
+  if (map[block]) return map[block];
+  if (block === 'block1') return 'None — strong across all four';
+  return 'Multiple areas';
+}
+
 async function submitAndShowResults() {
   const name = document.getElementById('userName').value.trim();
   const email = document.getElementById('userEmail').value.trim();
@@ -760,25 +746,29 @@ async function submitAndShowResults() {
   // Build score summary for email
   const scoreSummary = DIMS.map(d => `${d}: ${dims[d]}/9`).join(', ');
 
-  // Send to FormSubmit
+  // Subscribe to Kit, carrying the result and scores as custom fields so the
+  // list can be segmented by what each person's audit actually said.
   let deliveryFailed = false;
   try {
-    const res = await fetch('https://formsubmit.co/ajax/d39ee75e4e54df1efb44bb885f4ebd7a', {
+    const form = new FormData();
+    form.append('email_address', email);
+    form.append('fields[first_name]', name);
+    form.append('fields[audit_result]', result.title);
+    form.append('fields[audit_block]', block);
+    form.append('fields[audit_focus_area]', focusArea(dims, block));
+    form.append('fields[audit_scores]', scoreSummary);
+    DIMS.forEach(d => form.append(`fields[audit_${d.toLowerCase()}]`, dims[d]));
+    form.append('fields[audit_taken_on]', new Date().toISOString().slice(0,10));
+
+    const res = await fetch('https://app.kit.com/forms/9872094/subscriptions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        name: name,
-        email: email,
-        result_block: block,
-        result_title: result.title,
-        scores: scoreSummary,
-        _subject: `New Narrative Self-Audit submission — ${name}`
-      })
+      headers: { 'Accept': 'application/json' },
+      body: form
     });
     if (!res.ok) deliveryFailed = true;
   } catch(e) {
     deliveryFailed = true;
-    console.error('Narrative Self-Audit: delivery failed', e);
+    console.error('Narrative Self-Audit: subscription failed', e);
   }
 
   // Show results
