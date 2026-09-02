@@ -754,6 +754,7 @@ async function submitAndShowResults() {
     form.append('email_address', email);
     form.append('fields[first_name]', name);
     form.append('fields[audit_result]', result.title);
+    form.append('fields[audit_result_body]', result.body);
     form.append('fields[audit_block]', block);
     form.append('fields[audit_focus_area]', focusArea(dims, block));
     form.append('fields[audit_scores]', scoreSummary);
